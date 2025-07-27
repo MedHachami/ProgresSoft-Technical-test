@@ -22,7 +22,7 @@ import java.util.Currency;
 @RequiredArgsConstructor
 @AllArgsConstructor
 public class Deal {
-       @Id
+    @Id
     private String id;
 
     @NotNull
