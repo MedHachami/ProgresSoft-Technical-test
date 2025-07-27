@@ -7,18 +7,19 @@ on:
       - 'technicaltest/src/**'
       - 'technicaltest/Dockerfile'
       - 'technicaltest/docker-compose.yml'
-      - 'technicaltest/.github/workflows/**'
+      - '.github/workflows/**'
   pull_request:
     branches: [ "main" ]
     paths:
       - 'technicaltest/src/**'
       - 'technicaltest/Dockerfile'
       - 'technicaltest/docker-compose.yml'
-      - 'technicaltest/.github/workflows/**'
+      - '.github/workflows/**'
 
 jobs:
   build:
     runs-on: ubuntu-latest
+
     defaults:
       run:
         working-directory: technicaltest
@@ -46,8 +47,8 @@ jobs:
       - name: Build project (skip tests)
         run: mvn install -DskipTests
 
-      - name: Start Docker Compose
-        run: docker-compose up -d --build
+      - name: Start Docker Compose (app + db)
+        run: docker compose up -d --build
 
       - name: Wait for PostgreSQL to be ready
         run: |
@@ -65,7 +66,7 @@ jobs:
           SPRING_DATASOURCE_PASSWORD: password
 
       - name: Shut down Docker
-        run: docker-compose down
+        run: docker compose down
 
       - name: Build & Push Docker Image
         uses: mr-smithers-excellent/docker-build-push@v5
