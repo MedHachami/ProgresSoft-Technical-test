@@ -4,15 +4,12 @@ import com.progressoft.technicaltest.dto.DealRequestDto;
 import com.progressoft.technicaltest.dto.DealResponseDto;
 import com.progressoft.technicaltest.entity.Deal;
 import com.progressoft.technicaltest.exception.CurrencyMismatchException;
-import com.progressoft.technicaltest.exception.ErrorResponse;
-// import com.progressoft.technicaltest.exception.ToCurrencyAndFromCurrencyAreSame;
 import com.progressoft.technicaltest.mapper.DealMapper;
 import com.progressoft.technicaltest.repository.DealRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 import org.springframework.stereotype.Service;
-import org.springframework.validation.annotation.Validated;
 
 @Service
 @RequiredArgsConstructor
