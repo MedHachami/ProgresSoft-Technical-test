@@ -1,0 +1,27 @@
+spring:
+  application:
+    name: Progres Soft Technical Test
+  datasource:
+    url: jdbc:postgresql://localhost:5432/progressoft_db
+    username: postgres
+    password: root
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      dialect: org.hibernate.dialect.PostgreSQLDialect
+
+  open-api:
+    server:
+      url: http://localhost:8080
+      description: Deal management module api
+    info:
+      title: Deal management module
+      description: Deal management module
+      version: 1.0.0
+      contact:
+        name: MedHachami
+        email: moha.hach.9@gmail.com
+        url: https://portfolio-med-hachami.vercel.app/
