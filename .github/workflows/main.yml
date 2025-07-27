@@ -74,5 +74,6 @@ jobs:
           tags: latest
           registry: docker.io
           dockerfile: technicaltest/Dockerfile
+          directory: technicaltest
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
