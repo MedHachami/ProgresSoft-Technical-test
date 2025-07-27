@@ -8,10 +8,23 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.Currency;
 
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.progressoft.technicaltest.config.CurrencyDeserializer;
+import com.progressoft.technicaltest.validation.interfaces.DifferentCurrencies;
+
+@DifferentCurrencies
 public record DealRequestDto(@NotBlank String id,
-                             @NotNull Currency fromCurrency,
-                             @NotNull Currency toCurrency,
+
+                             @NotNull
+                            @JsonDeserialize(using = CurrencyDeserializer.class)
+                            Currency fromCurrency,
+
+                            @NotNull
+                            @JsonDeserialize(using = CurrencyDeserializer.class)
+                            Currency toCurrency,
+
                              @NotNull LocalDateTime timestamp,
+
                              @NotNull @Positive BigDecimal amount
 ) {
 }
