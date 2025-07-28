@@ -35,9 +35,9 @@ FX Data Warehouse is designed to process and store Foreign Exchange deals with r
 ## Tech Stack
 
 ### Core Technologies
-- Java 21
-- Spring Boot 3.2.0
-- PostgreSQL 16
+- Java 17
+- Spring Boot 3.5.4
+- PostgreSQL 17
 - Docker & Docker Compose
 
 ### Development Tools
