@@ -1,6 +1,5 @@
 package com.progressoft.technicaltest.service;
 
-
 import com.progressoft.technicaltest.dto.DealRequestDto;
 import com.progressoft.technicaltest.dto.DealResponseDto;
 import com.progressoft.technicaltest.entity.Deal;
@@ -25,57 +24,170 @@ import static org.mockito.Mockito.verify;
 
 @ExtendWith(SpringExtension.class)
 class DealServiceImplTest {
+
     @Mock
     private DealRepository dealRepository;
+
     @Mock
     private DealMapper dealMapper;
 
-    private DealService underTest;
+    private IDealService dealService;
 
-    private DealRequestDto dealRequestDto;
+    private DealRequestDto requestDto;
     private Deal deal;
 
     @BeforeEach
-    void setup() {
-        underTest = new DealServiceImpl(dealRepository, dealMapper);
-        dealRequestDto = new DealRequestDto("deal123",
-                Currency.getInstance("MAD"),
-                Currency.getInstance("USD"),
-                LocalDateTime.now(),
-                BigDecimal.valueOf(2000)
-        );
+    void setUp() {
+        dealService = new DealServiceImpl(dealRepository, dealMapper);
 
-        deal = new Deal(dealRequestDto.id(),
-                dealRequestDto.fromCurrency(),
-                dealRequestDto.toCurrency(),
-                dealRequestDto.timestamp(),
-                dealRequestDto.amount());
+        requestDto = new DealRequestDto(
+                "deal123",
+                Currency.getInstance("USD"),
+                Currency.getInstance("EUR"),
+                LocalDateTime.now(),
+                BigDecimal.valueOf(1000));
+
+        deal = new Deal(
+                requestDto.getId(),
+                requestDto.getFromCurrency(),
+                requestDto.getToCurrency(),
+                requestDto.getTimestamp(),
+                requestDto.getAmount());
     }
 
     @Test
-    void givenValidRequest_whenSave_thenReturnCreatedDeal() {
-        given(dealMapper.toEntity(dealRequestDto)).willReturn(deal);
-        given(dealRepository.save(any(Deal.class))).willReturn(deal);
-        given(dealMapper.toResponseEntity(deal))
-                .willReturn(new DealResponseDto(dealRequestDto.id(),
-                        dealRequestDto.fromCurrency(),
-                        dealRequestDto.toCurrency(),
-                        dealRequestDto.timestamp(),
-                        dealRequestDto.amount()));
+    void givenValidRequest_whenSave_thenReturnsResponse() {
+        DealResponseDto responseDto = new DealResponseDto(
+                deal.getId(),
+                deal.getFromCurrency(),
+                deal.getToCurrency(),
+                deal.getTimestamp(),
+                deal.getAmount());
 
-        DealResponseDto actual = underTest.save(dealRequestDto);
+        given(dealRepository.existsById(requestDto.getId())).willReturn(false);
+        given(dealMapper.toEntity(requestDto)).willReturn(deal);
+        given(dealRepository.save(deal)).willReturn(deal);
+        given(dealMapper.toResponseEntity(deal)).willReturn(responseDto);
 
-        assertThat(actual).isNotNull();
-        assertThat(actual.id()).isEqualTo(deal.getId());
+        DealResponseDto result = dealService.save(requestDto);
+
+        assertThat(result).isNotNull();
+        assertThat(result.id()).isEqualTo("deal123");
         verify(dealRepository).save(any(Deal.class));
     }
 
     @Test
-    void givenDealIdAlreadyExists_whenSave_thenThrowDuplicatedDealIdException() {
-        given(dealRepository.existsById(dealRequestDto.id())).willReturn(true);
+    void givenDuplicateDealId_whenSave_thenThrowsException() {
+        given(dealRepository.existsById(requestDto.getId())).willReturn(true);
 
         assertThatExceptionOfType(CurrencyMismatchException.class)
-                .isThrownBy(() -> underTest.save(dealRequestDto))
+                .isThrownBy(() -> dealService.save(requestDto))
                 .withMessage("Deal id already exists");
+    }
+
+    @Test
+    void givenNullAmount_whenSave_thenThrowsException() {
+        requestDto.setAmount(null);
+
+        assertThatExceptionOfType(NullPointerException.class)
+                .isThrownBy(() -> dealService.save(requestDto));
+    }
+
+    @Test
+    void givenZeroAmount_whenSave_thenAccept() {
+        requestDto.setAmount(BigDecimal.ZERO);
+
+        Deal zeroDeal = new Deal(
+                requestDto.getId(),
+                requestDto.getFromCurrency(),
+                requestDto.getToCurrency(),
+                requestDto.getTimestamp(),
+                requestDto.getAmount());
+
+        DealResponseDto responseDto = new DealResponseDto(
+                zeroDeal.getId(),
+                zeroDeal.getFromCurrency(),
+                zeroDeal.getToCurrency(),
+                zeroDeal.getTimestamp(),
+                zeroDeal.getAmount());
+
+        given(dealRepository.existsById(requestDto.getId())).willReturn(false);
+        given(dealMapper.toEntity(requestDto)).willReturn(zeroDeal);
+        given(dealRepository.save(zeroDeal)).willReturn(zeroDeal);
+        given(dealMapper.toResponseEntity(zeroDeal)).willReturn(responseDto);
+
+        DealResponseDto result = dealService.save(requestDto);
+
+        assertThat(result).isNotNull();
+        assertThat(result.amount()).isEqualByComparingTo("0");
+    }
+
+    @Test
+    void givenSameCurrencyForFromAndTo_whenSave_thenAccept() {
+        Currency currency = Currency.getInstance("USD");
+        requestDto.setFromCurrency(currency);
+        requestDto.setToCurrency(currency);
+
+        Deal sameCurrencyDeal = new Deal(
+                requestDto.getId(),
+                currency,
+                currency,
+                requestDto.getTimestamp(),
+                requestDto.getAmount());
+
+        DealResponseDto responseDto = new DealResponseDto(
+                sameCurrencyDeal.getId(),
+                sameCurrencyDeal.getFromCurrency(),
+                sameCurrencyDeal.getToCurrency(),
+                sameCurrencyDeal.getTimestamp(),
+                sameCurrencyDeal.getAmount());
+
+        given(dealRepository.existsById(requestDto.getId())).willReturn(false);
+        given(dealMapper.toEntity(requestDto)).willReturn(sameCurrencyDeal);
+        given(dealRepository.save(sameCurrencyDeal)).willReturn(sameCurrencyDeal);
+        given(dealMapper.toResponseEntity(sameCurrencyDeal)).willReturn(responseDto);
+
+        DealResponseDto result = dealService.save(requestDto);
+
+        assertThat(result).isNotNull();
+        assertThat(result.fromCurrency()).isEqualTo(result.toCurrency());
+    }
+
+    @Test
+    void givenNullCurrency_whenSave_thenThrowsException() {
+        requestDto.setFromCurrency(null);
+
+        assertThatExceptionOfType(NullPointerException.class)
+                .isThrownBy(() -> dealService.save(requestDto));
+    }
+
+    @Test
+    void givenNegativeAmount_whenSave_thenAcceptOrRejectBasedOnBusinessLogic() {
+        BigDecimal negativeAmount = BigDecimal.valueOf(-100);
+        requestDto.setAmount(negativeAmount);
+
+        Deal negativeDeal = new Deal(
+                requestDto.getId(),
+                requestDto.getFromCurrency(),
+                requestDto.getToCurrency(),
+                requestDto.getTimestamp(),
+                negativeAmount);
+
+        DealResponseDto responseDto = new DealResponseDto(
+                negativeDeal.getId(),
+                negativeDeal.getFromCurrency(),
+                negativeDeal.getToCurrency(),
+                negativeDeal.getTimestamp(),
+                negativeDeal.getAmount());
+
+        given(dealRepository.existsById(requestDto.getId())).willReturn(false);
+        given(dealMapper.toEntity(requestDto)).willReturn(negativeDeal);
+        given(dealRepository.save(negativeDeal)).willReturn(negativeDeal);
+        given(dealMapper.toResponseEntity(negativeDeal)).willReturn(responseDto);
+
+        DealResponseDto result = dealService.save(requestDto);
+
+        assertThat(result).isNotNull();
+        assertThat(result.amount()).isEqualByComparingTo("-100");
     }
 }

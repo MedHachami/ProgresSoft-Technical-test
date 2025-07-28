@@ -3,28 +3,32 @@ package com.progressoft.technicaltest.dto;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.Setter;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.Currency;
 
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import com.progressoft.technicaltest.config.CurrencyDeserializer;
-import com.progressoft.technicaltest.validation.interfaces.DifferentCurrencies;
+@Getter
+@Setter
+@AllArgsConstructor
+public class DealRequestDto {
+    @NotBlank
+    private String id;
 
-@DifferentCurrencies
-public record DealRequestDto(@NotBlank String id,
+    @NotNull
+    private Currency fromCurrency;
 
-                             @NotNull
-                            @JsonDeserialize(using = CurrencyDeserializer.class)
-                            Currency fromCurrency,
+    @NotNull
+    private Currency toCurrency;
 
-                            @NotNull
-                            @JsonDeserialize(using = CurrencyDeserializer.class)
-                            Currency toCurrency,
+    @NotNull
+    private LocalDateTime timestamp;
 
-                             @NotNull LocalDateTime timestamp,
+    @NotNull
+    @Positive
+    private BigDecimal amount;
 
-                             @NotNull @Positive BigDecimal amount
-) {
 }

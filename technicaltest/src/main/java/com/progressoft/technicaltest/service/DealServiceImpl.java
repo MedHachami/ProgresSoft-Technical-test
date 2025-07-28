@@ -14,16 +14,16 @@ import org.springframework.stereotype.Service;
 @Service
 @RequiredArgsConstructor
 @Slf4j
-public class DealServiceImpl implements DealService {
-   private final DealRepository dealRepository;
+public class DealServiceImpl implements IDealService {
+    private final DealRepository dealRepository;
     private final DealMapper dealMapper;
 
     @Override
     public DealResponseDto save(DealRequestDto dto) {
-        log.info("Attempting to save deal with ID: {}", dto.id());
+        log.info("Attempting to save deal with ID: {}", dto.getId());
 
-        if (dealRepository.existsById(dto.id())) {
-            log.warn("Duplicate deal ID detected: {}. Operation aborted.", dto.id());
+        if (dealRepository.existsById(dto.getId())) {
+            log.warn("Duplicate deal ID detected: {}. Operation aborted.", dto.getId());
             throw new CurrencyMismatchException("Deal id already exists");
         }
 

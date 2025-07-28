@@ -9,9 +9,8 @@ import java.time.LocalDateTime;
 import java.util.Currency;
 
 public record DealResponseDto(@NotBlank String id,
-                              @NotNull Currency fromCurrency,
-                              @NotNull Currency toCurrency,
-                              @NotNull LocalDateTime timestamp,
-                              @NotNull @Positive BigDecimal amount
-) {
+        @NotNull Currency fromCurrency,
+        @NotNull Currency toCurrency,
+        @NotNull LocalDateTime timestamp,
+        @NotNull @Positive BigDecimal amount) {
 }
